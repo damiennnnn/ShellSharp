@@ -19,13 +19,13 @@ public class ChangeDirectory : Utility
         if (args[0] == "..")
         {
             var dir = Directory.GetParent(CurrentPath.Get());
-            
+
             if (dir is not null)
                 CurrentPath.Set(dir.FullName);
 
             return;
         }
-        
+
         if (!CurrentPath.Set(args[0]))
         {
             // Check & get directory relative to current path
@@ -35,11 +35,9 @@ public class ChangeDirectory : Utility
 
             if (directory is null)
                 Console.WriteLine("No directory found.");
-            
+
             else
-            {
                 CurrentPath.Set(directory);
-            }
         }
     }
 }
