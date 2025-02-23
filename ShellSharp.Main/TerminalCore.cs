@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json;
 using ShellSharp.Commands;
 using Spectre.Console;
@@ -17,7 +18,8 @@ public class TerminalCore
         "\uE0B0[/]" +
         $"[{Config.SegmentTwoForeground} on {Config.SegmentTwoBackground}]" +
         $"{GetPrefix()}[/]" +
-        "[#005faf]\uE0B0[/]"
+        "[#005faf]\uE0B0[/]" +
+        " "
     );
 
     private string GetPrefix()
@@ -25,30 +27,43 @@ public class TerminalCore
         return CurrentPath.Get();
     }
 
-    private void LoadConfig()
+    private void LoadConfigFromCurrentDirectory()
     {
-        // Look for config.json, otherwise create it.
         var configPath = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.*", SearchOption.TopDirectoryOnly)
             .FirstOrDefault(x => Path.GetFileName(x) == "shellsharp.config.json");
         
-        if (configPath is not null && File.ReadAllText(configPath) is string configText)
+        if (configPath is not null)
+            LoadConfig(configPath);
+    }
+    
+    private bool LoadConfig(string configPath)
+    {
+        try
         {
-            try
+            string configText = File.ReadAllText(configPath);
+            var config = JsonSerializer.Deserialize<TerminalConfig>(configText);
+
+            if (config is not null)
             {
-                var config = JsonSerializer.Deserialize<TerminalConfig>(configText);
-                if (config is not null)
-                    Config = config;
-            }
-            catch (JsonException e)
-            {
-                Debug.WriteLine(e.Message);
+                Config = config;
+                return true;
             }
         }
+        catch (IOException e)
+        {
+            Debug.WriteLine($"File error: {e.Message}");
+        }
+        catch (JsonException e)
+        {
+            Debug.WriteLine($"JSON error: {e.Message}");
+        }
+
+        return false;
     }
     
     private void Initialise()
     {
-        LoadConfig();
+        LoadConfigFromCurrentDirectory();
     }
     
     public void Run()
@@ -59,6 +74,7 @@ public class TerminalCore
         do
         {
             AnsiConsole.Write(Prompt);
+
             while (Console.ReadLine() is string cmd)
             {
                 Interpret(cmd);
@@ -78,9 +94,60 @@ public class TerminalCore
         var commandMain = args[0];
         var commandArguments = args.Length > 1 ? args[1..] : default;
 
-        // Search through our built-in utils for command
-        if (Utilities.FindAndRun(commandMain, commandArguments))
+        if (args[0] == "shellsharp")
         {
+            // Terminal core config utilities
+            if (commandArguments is null)
+            {
+                // No argument(s) provided, do default behaviour (help info)
+
+                var helpInfo = new Markup(
+                    $"ShellSharp Version: {Assembly.GetExecutingAssembly().GetName().Version}"
+                    + Environment.NewLine
+                    + """
+                      
+                      [b]config[/] - Manages ShellSharp Configuration
+                      
+                            config load [i]path[/] - Load configuration file from specified path.
+                            config save [i]path[/] - Save current configuration file to specified path.
+                      
+                      """
+                    );
+                
+                AnsiConsole.Write(helpInfo);
+                return;
+            }
+            
+            switch (commandArguments[0])
+            {
+                case "version": break;
+                case "config":
+                {
+                    if (commandArguments.ElementAtOrDefault(1) is string configArg)
+                    {
+                        if (commandArguments.ElementAtOrDefault(2) is string configPath)
+                        {
+                            switch (configArg)
+                            {
+                                case "load":
+                                    LoadConfig(configPath); break;
+                                case "save": break;
+                            } 
+                        }
+                        else
+                        {
+                            // Do other config stuff (change config from command-line)
+                        }
+                    }
+                }
+                    break;
+            }
+
         }
+        else if (Utilities.FindAndRun(commandMain, commandArguments))
+        {
+            // Search through our built-in utils for command
+        }
+        
     }
 }
