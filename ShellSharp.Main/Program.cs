@@ -1,3 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using System.Reflection;
+using ShellSharp.Main;
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine($"ShellSharp Version: {Assembly.GetExecutingAssembly().GetName().Version}");
+var loop = new CommandLoop();
+loop.Run();

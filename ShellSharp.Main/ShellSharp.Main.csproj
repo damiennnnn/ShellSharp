@@ -5,6 +5,13 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Company>ShellSharp</Company>
+        <Product>ShellSharp</Product>
+        <AssemblyVersion>0.0.0.1</AssemblyVersion>
     </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ShellSharp\ShellSharp.csproj" />
+    </ItemGroup>
 
 </Project>

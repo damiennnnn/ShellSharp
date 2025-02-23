@@ -1,16 +1,16 @@
 ﻿namespace ShellSharp;
 
-public class CurrentPath
+public static class CurrentPath
 {
-    private string _path;
-    public string Get() => _path;
+    private static string _path;
+    public static string Get() => _path;
 
-    public CurrentPath()
+    static CurrentPath()
     {
         _path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     }
     
-    public bool Set(string path)
+    public static bool Set(string path)
     {
         return Directory.Exists(path) 
                && (_path = path) != null;
