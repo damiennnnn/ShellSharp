@@ -1,6 +1,6 @@
 namespace ShellSharp.Commands.Utilities;
 
-public class Clear : Utility
+public class Clear : Command
 {
     public Clear()
     {

@@ -1,6 +1,6 @@
 namespace ShellSharp.Commands.Utilities;
 
-public class ChangeDirectory : Utility
+public class ChangeDirectory : Command
 {
     public ChangeDirectory()
     {

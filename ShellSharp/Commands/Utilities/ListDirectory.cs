@@ -1,6 +1,6 @@
 namespace ShellSharp.Commands.Utilities;
 
-public class ListDirectory : Utility
+public class ListDirectory : Command
 {
     public ListDirectory()
     {

@@ -9,8 +9,10 @@ namespace ShellSharp.Main;
 
 public class TerminalCore
 {
-    private BuiltInUtilities Utilities { get; } = new();
     public TerminalConfig Config { get; set; } = new();
+
+    private TerminalHandler TerminalHandler { get; set; } = new();
+    
     private Markup Prompt => new(
         $"[{Config.SegmentOneForeground} on {Config.SegmentOneBackground}]" +
         $" {Environment.UserName} [/]" +
@@ -64,6 +66,9 @@ public class TerminalCore
     private void Initialise()
     {
         LoadConfigFromCurrentDirectory();
+
+        TerminalHandler.Prompt = Prompt;
+        TerminalHandler.RegisterBuiltInUtils();
     }
     
     public void Run()
@@ -71,83 +76,15 @@ public class TerminalCore
         Initialise();
         
         var exit = false;
+        
+        // Initial prompt
+        AnsiConsole.Write(Prompt);
+        
+        // I/O loop
         do
         {
-            AnsiConsole.Write(Prompt);
-
-            while (Console.ReadLine() is string cmd)
-            {
-                Interpret(cmd);
-
-                exit = cmd == "exit";
-                break;
-            }
+            TerminalHandler.HandleInput(Console.ReadKey(false));
         } while (!exit);
     }
 
-    private void Interpret(string command)
-    {
-        // Split input into command main and params
-        var args = command.Split(' ');
-
-        // The actual command
-        var commandMain = args[0];
-        var commandArguments = args.Length > 1 ? args[1..] : default;
-
-        if (args[0] == "shellsharp")
-        {
-            // Terminal core config utilities
-            if (commandArguments is null)
-            {
-                // No argument(s) provided, do default behaviour (help info)
-
-                var helpInfo = new Markup(
-                    $"ShellSharp Version: {Assembly.GetExecutingAssembly().GetName().Version}"
-                    + Environment.NewLine
-                    + """
-                      
-                      [b]config[/] - Manages ShellSharp Configuration
-                      
-                            config load [i]path[/] - Load configuration file from specified path.
-                            config save [i]path[/] - Save current configuration file to specified path.
-                      
-                      """
-                    );
-                
-                AnsiConsole.Write(helpInfo);
-                return;
-            }
-            
-            switch (commandArguments[0])
-            {
-                case "version": break;
-                case "config":
-                {
-                    if (commandArguments.ElementAtOrDefault(1) is string configArg)
-                    {
-                        if (commandArguments.ElementAtOrDefault(2) is string configPath)
-                        {
-                            switch (configArg)
-                            {
-                                case "load":
-                                    LoadConfig(configPath); break;
-                                case "save": break;
-                            } 
-                        }
-                        else
-                        {
-                            // Do other config stuff (change config from command-line)
-                        }
-                    }
-                }
-                    break;
-            }
-
-        }
-        else if (Utilities.FindAndRun(commandMain, commandArguments))
-        {
-            // Search through our built-in utils for command
-        }
-        
-    }
 }
