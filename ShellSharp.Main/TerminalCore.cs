@@ -1,8 +1,7 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Text.Json;
-using ShellSharp.Commands;
 using Spectre.Console;
+
 // ReSharper disable ConvertTypeCheckPatternToNullCheck
 
 namespace ShellSharp.Main;
@@ -11,8 +10,8 @@ public class TerminalCore
 {
     public TerminalConfig Config { get; set; } = new();
 
-    private TerminalHandler TerminalHandler { get; set; } = new();
-    
+    private TerminalHandler TerminalHandler { get; } = new();
+
     private Markup Prompt => new(
         $"[{Config.SegmentOneForeground} on {Config.SegmentOneBackground}]" +
         $" {Environment.UserName} [/]" +
@@ -33,16 +32,16 @@ public class TerminalCore
     {
         var configPath = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.*", SearchOption.TopDirectoryOnly)
             .FirstOrDefault(x => Path.GetFileName(x) == "shellsharp.config.json");
-        
+
         if (configPath is not null)
             LoadConfig(configPath);
     }
-    
+
     private bool LoadConfig(string configPath)
     {
         try
         {
-            string configText = File.ReadAllText(configPath);
+            var configText = File.ReadAllText(configPath);
             var config = JsonSerializer.Deserialize<TerminalConfig>(configText);
 
             if (config is not null)
@@ -62,7 +61,7 @@ public class TerminalCore
 
         return false;
     }
-    
+
     private void Initialise()
     {
         LoadConfigFromCurrentDirectory();
@@ -70,21 +69,20 @@ public class TerminalCore
         TerminalHandler.Prompt = Prompt;
         TerminalHandler.RegisterBuiltInUtils();
     }
-    
+
     public void Run()
     {
         Initialise();
-        
+
         var exit = false;
-        
+
         // Initial prompt
         AnsiConsole.Write(Prompt);
-        
+
         // I/O loop
         do
         {
             TerminalHandler.HandleInput(Console.ReadKey(false));
         } while (!exit);
     }
-
 }

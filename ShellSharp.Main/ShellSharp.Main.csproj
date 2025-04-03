@@ -20,9 +20,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="shellsharp.config.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <None Update="shellsharp.config.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
